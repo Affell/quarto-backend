@@ -39,4 +39,4 @@ jobs:
           echo "IMAGE_ID: $IMAGE_ID"
           echo "IMAGE_NAME: $IMAGE_NAME"
 
-          docker buildx build . --file Dockerfile -t $IMAGE_ID:$VERSION --push
+          docker buildx build . --file Dockerfile -t $IMAGE_ID:$VERSION --platform linux/arm64 --push
