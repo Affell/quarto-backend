@@ -1,0 +1,859 @@
+definitions:
+  authHandler.AskRecoverForm:
+    properties:
+      email:
+        type: string
+    type: object
+  authHandler.LoginError400:
+    properties:
+      message:
+        example: Please fully fill in the login form
+        type: string
+    type: object
+  authHandler.LoginError403:
+    properties:
+      message:
+        example: Invalid email or password
+        type: string
+    type: object
+  authHandler.LoginForm:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      token:
+        type: string
+    type: object
+  authHandler.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        properties:
+          email:
+            type: string
+          id:
+            type: integer
+          username:
+            type: string
+        type: object
+    type: object
+  authHandler.LogoutError401:
+    properties:
+      message:
+        example: Invalid session
+        type: string
+    type: object
+  authHandler.LogoutResponse:
+    properties:
+      message:
+        example: Logged out successfully
+        type: string
+    type: object
+  authHandler.MeError:
+    properties:
+      message:
+        example: Incorrect token
+        type: string
+    type: object
+  authHandler.PasswordResetError400:
+    properties:
+      message:
+        example: Please fully fill in the password reset form
+        type: string
+    type: object
+  authHandler.PasswordResetError403:
+    properties:
+      message:
+        example: Invalid recover token
+        type: string
+    type: object
+  authHandler.PasswordResetForm:
+    properties:
+      password:
+        type: string
+      token:
+        type: string
+    type: object
+  authHandler.PasswordResetResponse:
+    properties:
+      message:
+        example: Password reset successfully
+        type: string
+    type: object
+  authHandler.RecoverError400:
+    properties:
+      message:
+        example: Please fully fill in the account recovery form
+        type: string
+    type: object
+  authHandler.RecoverResponse:
+    properties:
+      message:
+        example: Recovery token created successfully
+        type: string
+    type: object
+  authHandler.SignoutError400:
+    properties:
+      message:
+        example: Empty password
+        type: string
+    type: object
+  authHandler.SignoutError403:
+    properties:
+      message:
+        example: Invalid password
+        type: string
+    type: object
+  authHandler.SignoutForm:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  authHandler.SignoutResponse:
+    properties:
+      message:
+        example: Signout successful
+        type: string
+    type: object
+  authHandler.SignupError400:
+    properties:
+      message:
+        example: Please fully fill in the signup form
+        type: string
+    type: object
+  authHandler.SignupError409:
+    properties:
+      message:
+        example: Email not available
+        type: string
+    type: object
+  authHandler.SignupForm:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: Password123!
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  authHandler.SignupResponse:
+    properties:
+      message:
+        example: Signup successful
+        type: string
+    type: object
+  authHandler.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  challenge.Challenge:
+    properties:
+      challenged_id:
+        type: integer
+      challenger_id:
+        type: integer
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      game_id:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      responded_at:
+        type: string
+      status:
+        description: pending, accepted, declined, expired, cancelled
+        type: string
+      updated_at:
+        type: string
+    type: object
+  challenge.ChallengeListResponse:
+    properties:
+      received:
+        items:
+          $ref: '#/definitions/challenge.Challenge'
+        type: array
+      sent:
+        items:
+          $ref: '#/definitions/challenge.Challenge'
+        type: array
+    type: object
+  challenge.ChallengeResponse:
+    properties:
+      challenge:
+        $ref: '#/definitions/challenge.Challenge'
+      game: {}
+    type: object
+  challenge.RespondToChallengeRequest:
+    properties:
+      accept:
+        type: boolean
+      challenge_id:
+        type: string
+    required:
+    - challenge_id
+    type: object
+  challenge.SendChallengeRequest:
+    properties:
+      challenged_id:
+        type: integer
+      message:
+        type: string
+    required:
+    - challenged_id
+    type: object
+  game.Game:
+    properties:
+      available_pieces:
+        description: JSON array of piece IDs
+        type: string
+      board:
+        description: JSON serialized 4x4 board
+        type: string
+      created_at:
+        type: string
+      current_turn:
+        description: '"player1" | "player2"'
+        type: string
+      game_phase:
+        description: '"selectPiece" | "placePiece"'
+        type: string
+      id:
+        type: string
+      move_history:
+        description: JSON array of moves in notation
+        type: string
+      player1_id:
+        type: integer
+      player2_id:
+        type: integer
+      selected_piece:
+        description: Current piece ID to place
+        type: integer
+      status:
+        description: '"active" | "finished"'
+        type: string
+      updated_at:
+        type: string
+      winner:
+        description: '"player1" | "player2" | "draw"'
+        type: string
+    type: object
+  game.PlacePieceRequest:
+    properties:
+      position:
+        type: string
+    required:
+    - position
+    type: object
+  game.SelectPieceRequest:
+    properties:
+      piece_id:
+        type: integer
+    required:
+    - piece_id
+    type: object
+  user.UserPaginationResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/user.UserPublic'
+        type: array
+    type: object
+  user.UserPublic:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@quarto.fr
+    name: API Support
+    url: https://quarto.fr/support
+  description: This is the Quarto API documentation.
+  termsOfService: https://quarto.fr/terms/
+  title: Quarto API
+  version: 0.0.1
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user using email/password or token.
+      parameters:
+      - description: Login form
+        in: body
+        name: loginForm
+        required: true
+        schema:
+          $ref: '#/definitions/authHandler.LoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token and user details
+          schema:
+            $ref: '#/definitions/authHandler.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authHandler.LoginError400'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/authHandler.LoginError403'
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logs out the user by revoking their token
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authHandler.LogoutResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/authHandler.LogoutError401'
+      summary: Logout user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get details of the authenticated user
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authHandler.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/authHandler.MeError'
+      summary: Get user details
+      tags:
+      - auth
+  /auth/recover:
+    post:
+      consumes:
+      - application/json
+      description: Generates a recovery token for the user to reset their password.
+      parameters:
+      - description: Account recovery form
+        in: body
+        name: askRecoverForm
+        required: true
+        schema:
+          $ref: '#/definitions/authHandler.AskRecoverForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/authHandler.RecoverResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authHandler.RecoverError400'
+      summary: Account Recovery
+      tags:
+      - auth
+  /auth/reset_password:
+    post:
+      consumes:
+      - application/json
+      description: Reset the password for a user using a recovery token
+      parameters:
+      - description: Password Reset Form
+        in: body
+        name: passwordResetForm
+        required: true
+        schema:
+          $ref: '#/definitions/authHandler.PasswordResetForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/authHandler.PasswordResetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authHandler.PasswordResetError400'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/authHandler.PasswordResetError403'
+      summary: Reset user password
+      tags:
+      - auth
+  /auth/signout:
+    post:
+      consumes:
+      - application/json
+      description: Sign out the authenticated user
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Signout form
+        in: body
+        name: signoutForm
+        required: true
+        schema:
+          $ref: '#/definitions/authHandler.SignoutForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authHandler.SignoutResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authHandler.SignoutError400'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/authHandler.SignoutError403'
+      summary: Sign out user
+      tags:
+      - auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Signup form
+        in: body
+        name: signupForm
+        required: true
+        schema:
+          $ref: '#/definitions/authHandler.SignupForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/authHandler.SignupResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authHandler.SignupError400'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/authHandler.SignupError409'
+      summary: Signup a new user
+      tags:
+      - auth
+  /challenge/my:
+    get:
+      description: Get all challenges sent and received by the user
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/challenge.ChallengeListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get my challenges
+      tags:
+      - challenges
+  /challenge/respond:
+    post:
+      consumes:
+      - application/json
+      description: Accept or decline a challenge
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Response to challenge
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/challenge.RespondToChallengeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/challenge.ChallengeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Respond to challenge
+      tags:
+      - challenges
+  /challenge/send:
+    post:
+      consumes:
+      - application/json
+      description: Send a challenge to another player
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Send challenge request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/challenge.SendChallengeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/challenge.Challenge'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send challenge
+      tags:
+      - challenges
+  /game/{id}:
+    get:
+      description: Get a game by ID
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get game
+      tags:
+      - games
+  /game/{id}/forfeit:
+    post:
+      description: Forfeit the current game
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Forfeit game
+      tags:
+      - games
+  /game/{id}/place-piece:
+    post:
+      consumes:
+      - application/json
+      description: Place a piece on the board
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Place piece request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/game.PlacePieceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Place piece
+      tags:
+      - games
+  /game/{id}/select-piece:
+    post:
+      consumes:
+      - application/json
+      description: Select a piece for the next move
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Select piece request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/game.SelectPieceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Select piece
+      tags:
+      - games
+  /game/my:
+    get:
+      description: Get all games for the current user
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: Game status filter (active, finished)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/game.Game'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get my games
+      tags:
+      - games
+  /users:
+    get:
+      description: Get paginated list of users
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20, max: 100)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserPaginationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get users list
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Get user information by ID
+      parameters:
+      - description: Session token
+        in: header
+        name: Quarto-Connect-Token
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserPublic'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by ID
+      tags:
+      - users
+  /ws:
+    get:
+      description: Establish WebSocket connection for real-time communication
+      parameters:
+      - description: Game ID (required for game-specific communication)
+        in: query
+        name: game_id
+        required: true
+        type: string
+      - description: Session token
+        in: query
+        name: token
+        required: true
+        type: string
+      responses: {}
+      summary: WebSocket connection
+      tags:
+      - websocket
+swagger: "2.0"
