@@ -66,8 +66,8 @@ func solve(c echo.Context) error {
 	}
 	// Initialize AI engine with the specified depth
 	depth := req.Depth
-	if len(moves) >= 6 {
-		depth = 10
+	if len(moves) <= 6 {
+		depth = 5
 	}
 	engine := ai.NewEngine(depth)
 

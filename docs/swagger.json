@@ -12,6 +12,49 @@
         "version": "0.0.1"
     },
     "paths": {
+        "/ai/solve": {
+            "post": {
+                "description": "Analyzes the current game state and returns the optimal move using minimax algorithm",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Find the best move using AI",
+                "parameters": [
+                    {
+                        "description": "Solve request containing game history and search depth",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiHandler.SolveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Best move and evaluation score",
+                        "schema": {
+                            "$ref": "#/definitions/aiHandler.SolveResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid format, depth, move history, or game state",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Logs in a user using email/password or token.",
@@ -855,6 +898,45 @@
         }
     },
     "definitions": {
+        "aiHandler.SolveRequest": {
+            "type": "object",
+            "properties": {
+                "depth": {
+                    "type": "integer"
+                },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "selected_piece": {
+                    "$ref": "#/definitions/game.Piece"
+                }
+            }
+        },
+        "aiHandler.SolveResponse": {
+            "type": "object",
+            "properties": {
+                "best_move": {
+                    "type": "string"
+                },
+                "continuation": {
+                    "description": "Liste des coups de la continuation",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "score": {
+                    "type": "integer"
+                },
+                "suggested_piece": {
+                    "description": "Pièce suggérée pour l'adversaire au coup suivant",
+                    "type": "integer"
+                }
+            }
+        },
         "authHandler.AskRecoverForm": {
             "type": "object",
             "properties": {
@@ -1190,30 +1272,42 @@
             "type": "object",
             "properties": {
                 "available_pieces": {
-                    "description": "JSON array of piece IDs",
-                    "type": "string"
+                    "description": "List of available pieces (1-16)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/game.Piece"
+                    }
                 },
                 "board": {
-                    "description": "JSON serialized 4x4 board",
-                    "type": "string"
+                    "description": "4x4 matrix of Piece",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/game.Piece"
+                        }
+                    }
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "current_turn": {
-                    "description": "\"player1\" | \"player2\"",
-                    "type": "string"
+                    "description": "ID of the player whose turn it is",
+                    "type": "integer"
                 },
                 "game_phase": {
-                    "description": "\"selectPiece\" | \"placePiece\"",
-                    "type": "string"
+                    "description": "0 = \"selectPiece\", 1 = \"placePiece\"",
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
                 "move_history": {
-                    "description": "JSON array of moves in notation",
-                    "type": "string"
+                    "description": "List of moves made in the game",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/game.Move"
+                    }
                 },
                 "player1_id": {
                     "type": "integer"
@@ -1222,21 +1316,87 @@
                     "type": "integer"
                 },
                 "selected_piece": {
-                    "description": "Current piece ID to place",
-                    "type": "integer"
+                    "description": "Current piece to place",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/game.Piece"
+                        }
+                    ]
                 },
                 "status": {
-                    "description": "\"active\" | \"finished\"",
-                    "type": "string"
+                    "description": "0 = \"playing\", 1 = \"finished\"",
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"
                 },
                 "winner": {
-                    "description": "\"player1\" | \"player2\" | \"draw\"",
-                    "type": "string"
+                    "description": "ID of the winner (0 if draw)",
+                    "type": "integer"
                 }
             }
+        },
+        "game.Move": {
+            "type": "object",
+            "properties": {
+                "piece": {
+                    "description": "ID de la pièce sélectionnée par l'adversaire (0-15)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/game.Piece"
+                        }
+                    ]
+                },
+                "position": {
+                    "description": "Position où placer la pièce sélectionnée",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/game.Position"
+                        }
+                    ]
+                }
+            }
+        },
+        "game.Piece": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                -1
+            ],
+            "x-enum-varnames": [
+                "PieceWhiteSquareLargeFilled",
+                "PieceWhiteSquareLargeEmpty",
+                "PieceWhiteSquareSmallFilled",
+                "PieceWhiteSquareSmallEmpty",
+                "PieceWhiteCircleLargeFilled",
+                "PieceWhiteCircleLargeEmpty",
+                "PieceWhiteCircleSmallFilled",
+                "PieceWhiteCircleSmallEmpty",
+                "PieceBlackSquareLargeFilled",
+                "PieceBlackSquareLargeEmpty",
+                "PieceBlackSquareSmallFilled",
+                "PieceBlackSquareSmallEmpty",
+                "PieceBlackCircleLargeFilled",
+                "PieceBlackCircleLargeEmpty",
+                "PieceBlackCircleSmallFilled",
+                "PieceBlackCircleSmallEmpty",
+                "PieceEmpty"
+            ]
         },
         "game.PlacePieceRequest": {
             "type": "object",
@@ -1249,6 +1409,17 @@
                 }
             }
         },
+        "game.Position": {
+            "type": "object",
+            "properties": {
+                "col": {
+                    "type": "integer"
+                },
+                "row": {
+                    "type": "integer"
+                }
+            }
+        },
         "game.SelectPieceRequest": {
             "type": "object",
             "required": [
@@ -1256,7 +1427,7 @@
             ],
             "properties": {
                 "piece_id": {
-                    "type": "integer"
+                    "$ref": "#/definitions/game.Piece"
                 }
             }
         },

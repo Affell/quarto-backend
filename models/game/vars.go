@@ -61,14 +61,14 @@ type (
 
 	// Position représente une position sur le plateau Quarto (4x4)
 	Position struct {
-		Row int
-		Col int
+		Row int `json:"row"`
+		Col int `json:"col"`
 	}
 
 	// Move représente un mouvement complet dans Quarto (placement + sélection pour l'adversaire)
 	Move struct {
-		Piece    Piece    // ID de la pièce sélectionnée par l'adversaire (0-15)
-		Position Position // Position où placer la pièce sélectionnée
+		Piece    Piece    `json:"piece"`    // ID de la pièce sélectionnée par l'adversaire (0-15)
+		Position Position `json:"position"` // Position où placer la pièce sélectionnée
 	}
 
 	// Request/Response types

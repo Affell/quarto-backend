@@ -1,4 +1,30 @@
 definitions:
+  aiHandler.SolveRequest:
+    properties:
+      depth:
+        type: integer
+      history:
+        items:
+          type: string
+        type: array
+      selected_piece:
+        $ref: '#/definitions/game.Piece'
+    type: object
+  aiHandler.SolveResponse:
+    properties:
+      best_move:
+        type: string
+      continuation:
+        description: Liste des coups de la continuation
+        items:
+          type: string
+        type: array
+      score:
+        type: integer
+      suggested_piece:
+        description: Pièce suggérée pour l'adversaire au coup suivant
+        type: integer
+    type: object
   authHandler.AskRecoverForm:
     properties:
       email:
@@ -220,40 +246,98 @@ definitions:
   game.Game:
     properties:
       available_pieces:
-        description: JSON array of piece IDs
-        type: string
+        description: List of available pieces (1-16)
+        items:
+          $ref: '#/definitions/game.Piece'
+        type: array
       board:
-        description: JSON serialized 4x4 board
-        type: string
+        description: 4x4 matrix of Piece
+        items:
+          items:
+            $ref: '#/definitions/game.Piece'
+          type: array
+        type: array
       created_at:
         type: string
       current_turn:
-        description: '"player1" | "player2"'
-        type: string
+        description: ID of the player whose turn it is
+        type: integer
       game_phase:
-        description: '"selectPiece" | "placePiece"'
-        type: string
+        description: 0 = "selectPiece", 1 = "placePiece"
+        type: integer
       id:
         type: string
       move_history:
-        description: JSON array of moves in notation
-        type: string
+        description: List of moves made in the game
+        items:
+          $ref: '#/definitions/game.Move'
+        type: array
       player1_id:
         type: integer
       player2_id:
         type: integer
       selected_piece:
-        description: Current piece ID to place
-        type: integer
+        allOf:
+        - $ref: '#/definitions/game.Piece'
+        description: Current piece to place
       status:
-        description: '"active" | "finished"'
-        type: string
+        description: 0 = "playing", 1 = "finished"
+        type: integer
       updated_at:
         type: string
       winner:
-        description: '"player1" | "player2" | "draw"'
-        type: string
+        description: ID of the winner (0 if draw)
+        type: integer
     type: object
+  game.Move:
+    properties:
+      piece:
+        allOf:
+        - $ref: '#/definitions/game.Piece'
+        description: ID de la pièce sélectionnée par l'adversaire (0-15)
+      position:
+        allOf:
+        - $ref: '#/definitions/game.Position'
+        description: Position où placer la pièce sélectionnée
+    type: object
+  game.Piece:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - -1
+    type: integer
+    x-enum-varnames:
+    - PieceWhiteSquareLargeFilled
+    - PieceWhiteSquareLargeEmpty
+    - PieceWhiteSquareSmallFilled
+    - PieceWhiteSquareSmallEmpty
+    - PieceWhiteCircleLargeFilled
+    - PieceWhiteCircleLargeEmpty
+    - PieceWhiteCircleSmallFilled
+    - PieceWhiteCircleSmallEmpty
+    - PieceBlackSquareLargeFilled
+    - PieceBlackSquareLargeEmpty
+    - PieceBlackSquareSmallFilled
+    - PieceBlackSquareSmallEmpty
+    - PieceBlackCircleLargeFilled
+    - PieceBlackCircleLargeEmpty
+    - PieceBlackCircleSmallFilled
+    - PieceBlackCircleSmallEmpty
+    - PieceEmpty
   game.PlacePieceRequest:
     properties:
       position:
@@ -261,10 +345,17 @@ definitions:
     required:
     - position
     type: object
+  game.Position:
+    properties:
+      col:
+        type: integer
+      row:
+        type: integer
+    type: object
   game.SelectPieceRequest:
     properties:
       piece_id:
-        type: integer
+        $ref: '#/definitions/game.Piece'
     required:
     - piece_id
     type: object
@@ -300,6 +391,36 @@ info:
   title: Quarto API
   version: 0.0.1
 paths:
+  /ai/solve:
+    post:
+      consumes:
+      - application/json
+      description: Analyzes the current game state and returns the optimal move using
+        minimax algorithm
+      parameters:
+      - description: Solve request containing game history and search depth
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiHandler.SolveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Best move and evaluation score
+          schema:
+            $ref: '#/definitions/aiHandler.SolveResponse'
+        "400":
+          description: Bad request - invalid format, depth, move history, or game
+            state
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Find the best move using AI
+      tags:
+      - AI
   /auth/login:
     post:
       consumes:

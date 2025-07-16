@@ -41,6 +41,16 @@ func (g *Game) SelectPiece(piece Piece) error {
 	// Mettre à jour le jeu
 	g.SelectedPiece = piece
 	g.GamePhase = GamePhasePlacePiece
+
+	// Retirer la pièce sélectionnée des pièces disponibles
+	var newAvailablePieces []Piece
+	for _, availablePiece := range g.AvailablePieces {
+		if availablePiece != piece {
+			newAvailablePieces = append(newAvailablePieces, availablePiece)
+		}
+	}
+	g.AvailablePieces = newAvailablePieces
+
 	g.switchTurn()
 	g.UpdatedAt = time.Now()
 
@@ -61,7 +71,7 @@ func (g *Game) PlacePiece(position Position) (err error) {
 	}
 
 	// Vérifier qu'une pièce est sélectionnée
-	if IsValidPiece(g.SelectedPiece) {
+	if !IsValidPiece(g.SelectedPiece) || g.SelectedPiece == PieceEmpty {
 		return fmt.Errorf("aucune pièce n'est sélectionnée")
 	}
 
@@ -71,16 +81,6 @@ func (g *Game) PlacePiece(position Position) (err error) {
 
 	// Placer la pièce
 	g.Board[position.Row][position.Col] = g.SelectedPiece
-
-	// Mettre à jour les pièces disponibles
-	var newAvailablePieces []Piece
-	for _, piece := range g.AvailablePieces {
-		if piece == g.SelectedPiece {
-			continue
-		}
-		newAvailablePieces = append(newAvailablePieces, piece)
-	}
-	g.AvailablePieces = newAvailablePieces
 
 	// Mettre à jour l'historique des mouvements
 	g.History = append(g.History, Move{
