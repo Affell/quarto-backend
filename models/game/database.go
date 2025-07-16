@@ -42,31 +42,31 @@ func ScanGame(row pgx.Row) (g Game, err error) {
 		return
 	}
 
-	var selectedPiecePtr *int
-	if selectedPiece.Valid {
-		selectedPieceInt := int(selectedPiece.Int32)
-		selectedPiecePtr = &selectedPieceInt
-	}
+	// var selectedPiecePtr *int
+	// if selectedPiece.Valid {
+	// 	selectedPieceInt := int(selectedPiece.Int32)
+	// 	selectedPiecePtr = &selectedPieceInt
+	// }
 
-	var winnerPtr *string
-	if winner.Valid {
-		winnerPtr = &winner.String
-	}
+	// var winnerPtr *string
+	// if winner.Valid {
+	// 	winnerPtr = &winner.String
+	// }
 
 	g = Game{
-		ID:              id.String,
-		Player1ID:       player1ID.Int64,
-		Player2ID:       player2ID.Int64,
-		CurrentTurn:     currentTurn.String,
-		GamePhase:       gamePhase.String,
-		Board:           board.String,
-		AvailablePieces: availablePieces.String,
-		SelectedPiece:   selectedPiecePtr,
-		Status:          status.String,
-		Winner:          winnerPtr,
-		MoveHistory:     moveHistory.String,
-		CreatedAt:       createdAt.Time,
-		UpdatedAt:       updatedAt.Time,
+		ID:        id.String,
+		Player1ID: player1ID.Int64,
+		Player2ID: player2ID.Int64,
+		// CurrentTurn:     currentTurn.String,
+		// GamePhase:       gamePhase.String,
+		// Board:           board.String,
+		// AvailablePieces: availablePieces.String,
+		// SelectedPiece:   selectedPiecePtr,
+		// Status:          status.String,
+		// Winner:          winnerPtr,
+		// History:         moveHistory.String,
+		CreatedAt: createdAt.Time,
+		UpdatedAt: updatedAt.Time,
 	}
 
 	return
@@ -88,17 +88,18 @@ func CreateGame(game Game) error {
 	_, err = sqlCo.Exec(postgresql.SQLCtx, query,
 		game.ID, game.Player1ID, game.Player2ID,
 		game.CurrentTurn, game.GamePhase, game.Board, game.AvailablePieces,
-		game.SelectedPiece, game.Status, game.Winner, game.MoveHistory,
+		game.SelectedPiece, game.Status, game.Winner, game.History,
 		game.CreatedAt, game.UpdatedAt)
 
 	return err
 }
 
 // GetGameByID récupère une partie par son ID
-func GetGameByID(gameID string) (*Game, error) {
+func GetGameByID(gameID string) (g Game, err error) {
 	sqlCo, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
 	if err != nil {
-		return nil, fmt.Errorf("erreur de connexion DB: %v", err)
+		err = fmt.Errorf("erreur de connexion DB: %v", err)
+		return
 	}
 	defer sqlCo.Close(postgresql.SQLCtx)
 
@@ -109,12 +110,13 @@ func GetGameByID(gameID string) (*Game, error) {
 		FROM games WHERE id = $1`
 
 	row := sqlCo.QueryRow(postgresql.SQLCtx, query, gameID)
-	game, err := ScanGame(row)
+	g, err = ScanGame(row)
 	if err != nil {
-		return nil, fmt.Errorf("partie non trouvée: %v", err)
+		err = fmt.Errorf("partie non trouvée: %v", err)
+		return
 	}
 
-	return &game, nil
+	return
 }
 
 // UpdateGame met à jour une partie en base
@@ -133,7 +135,7 @@ func UpdateGame(game Game) error {
 
 	_, err = sqlCo.Exec(postgresql.SQLCtx, query,
 		game.CurrentTurn, game.GamePhase, game.Board, game.AvailablePieces,
-		game.SelectedPiece, game.Status, game.Winner, game.MoveHistory,
+		game.SelectedPiece, game.Status, game.Winner, game.History,
 		time.Now(), game.ID)
 
 	return err

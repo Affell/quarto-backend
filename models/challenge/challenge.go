@@ -81,7 +81,7 @@ func AcceptChallenge(challengeID string, challengedID int64) (*Challenge, *game.
 		return nil, nil, fmt.Errorf("erreur lors de la récupération du défi mis à jour: %v", err)
 	}
 
-	return updatedChallenge, newGame, nil
+	return updatedChallenge, &newGame, nil
 }
 
 // DeclineChallenge refuse un défi

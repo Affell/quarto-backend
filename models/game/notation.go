@@ -1,36 +1,47 @@
-package utils
+package game
 
 import (
 	"encoding/json"
 	"fmt"
-	"quarto/models/game"
 	"strconv"
 	"strings"
 )
 
+func GetPieceCharacteristics(piece Piece) (int, int, int, int) {
+	color := int((piece) / 8)
+	shape := int(piece % 8 / 4)
+	size := int(piece % 4 / 2)
+	fill := int(piece % 2)
+	return color, shape, size, fill
+}
+
 // PieceToNotation convertit une pièce en notation algébrique
-func PieceToNotation(piece game.Piece) string {
-	color := "B"
-	if piece.Color == "noir" {
-		color = "N"
+func PieceToNotation(piece Piece) string {
+	color, shape, size, fill := GetPieceCharacteristics(piece)
+
+	var colorChar, shapeChar, sizeChar, fillChar string
+	if color == 0 {
+		colorChar = "B" // Blanc
+	} else {
+		colorChar = "N" // Noir
+	}
+	if shape == 0 {
+		shapeChar = "C" // Carré
+	} else {
+		shapeChar = "R" // Rond
+	}
+	if size == 0 {
+		sizeChar = "G" // Grand
+	} else {
+		sizeChar = "P" // Petit
+	}
+	if fill == 0 {
+		fillChar = "P" // Plein
+	} else {
+		fillChar = "T" // Troué
 	}
 
-	shape := "C"
-	if piece.Shape == "rond" {
-		shape = "R"
-	}
-
-	size := "G"
-	if piece.Size == "petit" {
-		size = "P"
-	}
-
-	fill := "P"
-	if piece.Fill == "troué" {
-		fill = "T"
-	}
-
-	return fmt.Sprintf("%s%s%s%s", color, shape, size, fill)
+	return fmt.Sprintf("%s%s%s%s", colorChar, shapeChar, sizeChar, fillChar)
 }
 
 // CoordsToPosition convertit les coordonnées de la grille en position algébrique
@@ -68,97 +79,57 @@ func PositionToCoords(position string) (int, int, error) {
 }
 
 // CreateMoveNotation crée la notation d'un coup
-func CreateMoveNotation(piece game.Piece, position string) string {
+func CreateMoveNotation(piece Piece, position string) string {
 	notation := PieceToNotation(piece)
 	return fmt.Sprintf("%s-%s", notation, position)
 }
 
 // ParseMoveNotation parse une notation de coup
-func ParseMoveNotation(notation string) (game.Piece, string, error) {
+func ParseMoveNotation(notation string) (Piece, string, error) {
 	parts := strings.Split(notation, "-")
 	if len(parts) != 2 {
-		return game.Piece{}, "", fmt.Errorf("notation invalide: %s", notation)
+		return 0, "", fmt.Errorf("notation invalide: %s", notation)
 	}
 
 	pieceNotation := parts[0]
 	position := parts[1]
 
 	if len(pieceNotation) != 4 {
-		return game.Piece{}, "", fmt.Errorf("notation de pièce invalide: %s", pieceNotation)
+		return 0, "", fmt.Errorf("notation de pièce invalide: %s", pieceNotation)
 	}
 
-	piece := game.Piece{}
+	piece, err := NotationToPiece(pieceNotation)
 
-	// Couleur
-	switch pieceNotation[0] {
-	case 'B':
-		piece.Color = "blanc"
-	case 'N':
-		piece.Color = "noir"
-	default:
-		return game.Piece{}, "", fmt.Errorf("couleur invalide: %c", pieceNotation[0])
-	}
-
-	// Forme
-	switch pieceNotation[1] {
-	case 'C':
-		piece.Shape = "carré"
-	case 'R':
-		piece.Shape = "rond"
-	default:
-		return game.Piece{}, "", fmt.Errorf("forme invalide: %c", pieceNotation[1])
-	}
-
-	// Taille
-	switch pieceNotation[2] {
-	case 'G':
-		piece.Size = "grand"
-	case 'P':
-		piece.Size = "petit"
-	default:
-		return game.Piece{}, "", fmt.Errorf("taille invalide: %c", pieceNotation[2])
-	}
-
-	// Remplissage
-	switch pieceNotation[3] {
-	case 'P':
-		piece.Fill = "plein"
-	case 'T':
-		piece.Fill = "troué"
-	default:
-		return game.Piece{}, "", fmt.Errorf("remplissage invalide: %c", pieceNotation[3])
-	}
-
-	return piece, position, nil
+	return piece, position, err
 }
 
-// FindPieceByNotation trouve une pièce par sa notation dans la liste des pièces disponibles
-func FindPieceByNotation(notation string, pieces []game.Piece) (*game.Piece, error) {
-	targetPiece, _, err := ParseMoveNotation(notation + "-a1") // Position temporaire
-	if err != nil {
-		return nil, err
+func NotationToPiece(notation string) (Piece, error) {
+	parts := strings.Split(notation, "-")
+	pieceNotation := parts[0]
+
+	if len(pieceNotation) != 4 {
+		return 0, fmt.Errorf("notation de pièce invalide: %s", pieceNotation)
 	}
 
-	for _, piece := range pieces {
-		if piece.Color == targetPiece.Color &&
-			piece.Shape == targetPiece.Shape &&
-			piece.Size == targetPiece.Size &&
-			piece.Fill == targetPiece.Fill {
-			return &piece, nil
-		}
+	color := 0
+	if pieceNotation[0] == 'N' {
+		color = 1 // Noir
 	}
-
-	return nil, fmt.Errorf("pièce non trouvée: %s", notation)
-}
-
-// GetPieceByID retourne une pièce par son ID
-func GetPieceByID(id int, pieces []game.Piece) (*game.Piece, error) {
-	for _, piece := range pieces {
-		if piece.ID == id {
-			return &piece, nil
-		}
+	shape := 0
+	if pieceNotation[1] == 'R' {
+		shape = 1 // Rond
 	}
-	return nil, fmt.Errorf("pièce avec ID %d non trouvée", id)
+	size := 0
+	if pieceNotation[2] == 'P' {
+		size = 1 // Petit
+	}
+	fill := 0
+	if pieceNotation[3] == 'T' {
+		fill = 1 // Troué
+	}
+	// Calculer l'ID de la pièce
+	pieceID := color*8 + shape*4 + size*2 + fill
+	return Piece(pieceID), nil
 }
 
 // BoardToMatrix convertit le JSON board en matrice 4x4
@@ -214,4 +185,17 @@ func MatrixToBoard(board [4][4]*int) string {
 	}
 	result += "]"
 	return result
+}
+
+func PrintBoard(board [4][4]Piece) {
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			if board[i][j] == PieceEmpty {
+				fmt.Print("[ ] ")
+			} else {
+				fmt.Printf("[%d] ", board[i][j])
+			}
+		}
+		fmt.Println()
+	}
 }

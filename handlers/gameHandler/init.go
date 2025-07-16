@@ -7,33 +7,31 @@ import (
 )
 
 func All(prefix string) []models.Route {
-	gameHandler := NewGameHandler()
-
 	return []models.Route{
 		{
 			Path:    prefix + "/:id",
 			Method:  echo.GET,
-			Handler: gameHandler.GetGame,
+			Handler: getGame,
 		},
 		{
 			Path:    prefix + "/:id/select-piece",
 			Method:  echo.POST,
-			Handler: gameHandler.SelectPiece,
+			Handler: selectPiece,
 		},
 		{
 			Path:    prefix + "/:id/place-piece",
 			Method:  echo.POST,
-			Handler: gameHandler.PlacePiece,
+			Handler: placePiece,
 		},
 		{
 			Path:    prefix + "/:id/forfeit",
 			Method:  echo.POST,
-			Handler: gameHandler.ForfeitGame,
+			Handler: forfeitGame,
 		},
 		{
 			Path:    prefix + "/my",
 			Method:  echo.GET,
-			Handler: gameHandler.GetMyGames,
+			Handler: getMyGames,
 		},
 	}
 }

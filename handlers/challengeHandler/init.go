@@ -7,23 +7,22 @@ import (
 )
 
 func All(prefix string) []models.Route {
-	challengeHandler := NewChallengeHandler()
 
 	return []models.Route{
 		{
 			Path:    prefix + "/send",
 			Method:  echo.POST,
-			Handler: challengeHandler.SendChallenge,
+			Handler: sendChallenge,
 		},
 		{
 			Path:    prefix + "/respond",
 			Method:  echo.POST,
-			Handler: challengeHandler.RespondToChallenge,
+			Handler: respondToChallenge,
 		},
 		{
 			Path:    prefix + "/my",
 			Method:  echo.GET,
-			Handler: challengeHandler.GetMyChallenges,
+			Handler: getMyChallenges,
 		},
 	}
 }

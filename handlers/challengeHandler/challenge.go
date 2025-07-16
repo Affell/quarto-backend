@@ -8,13 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ChallengeHandler struct{}
-
-func NewChallengeHandler() *ChallengeHandler {
-	return &ChallengeHandler{}
-}
-
-// SendChallenge envoie un défi à un autre joueur
+// sendChallenge envoie un défi à un autre joueur
 // @Summary Send challenge
 // @Description Send a challenge to another player
 // @Tags challenges
@@ -25,7 +19,7 @@ func NewChallengeHandler() *ChallengeHandler {
 // @Success 201 {object} challenge.Challenge
 // @Failure 400 {object} map[string]string
 // @Router /challenge/send [post]
-func (ch *ChallengeHandler) SendChallenge(c echo.Context) error {
+func sendChallenge(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -44,7 +38,7 @@ func (ch *ChallengeHandler) SendChallenge(c echo.Context) error {
 	return c.JSON(http.StatusCreated, newChallenge.ToWeb())
 }
 
-// RespondToChallenge répond à un défi (accepter ou refuser)
+// respondToChallenge répond à un défi (accepter ou refuser)
 // @Summary Respond to challenge
 // @Description Accept or decline a challenge
 // @Tags challenges
@@ -55,7 +49,7 @@ func (ch *ChallengeHandler) SendChallenge(c echo.Context) error {
 // @Success 200 {object} challenge.ChallengeResponse
 // @Failure 400 {object} map[string]string
 // @Router /challenge/respond [post]
-func (ch *ChallengeHandler) RespondToChallenge(c echo.Context) error {
+func respondToChallenge(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -95,7 +89,7 @@ func (ch *ChallengeHandler) RespondToChallenge(c echo.Context) error {
 	}
 }
 
-// GetMyChallenges récupère tous les défis de l'utilisateur
+// getMyChallenges récupère tous les défis de l'utilisateur
 // @Summary Get my challenges
 // @Description Get all challenges sent and received by the user
 // @Tags challenges
@@ -104,7 +98,7 @@ func (ch *ChallengeHandler) RespondToChallenge(c echo.Context) error {
 // @Success 200 {object} challenge.ChallengeListResponse
 // @Failure 401 {object} map[string]string
 // @Router /challenge/my [get]
-func (ch *ChallengeHandler) GetMyChallenges(c echo.Context) error {
+func getMyChallenges(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())

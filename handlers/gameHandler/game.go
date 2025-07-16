@@ -11,12 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type GameHandler struct{}
-
-func NewGameHandler() *GameHandler {
-	return &GameHandler{}
-}
-
 // GetGame récupère une partie
 // @Summary Get game
 // @Description Get a game by ID
@@ -27,7 +21,7 @@ func NewGameHandler() *GameHandler {
 // @Success 200 {object} game.Game
 // @Failure 404 {object} map[string]string
 // @Router /game/{id} [get]
-func (gh *GameHandler) GetGame(c echo.Context) error {
+func getGame(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -54,7 +48,7 @@ func (gh *GameHandler) GetGame(c echo.Context) error {
 // @Success 200 {object} game.Game
 // @Failure 400 {object} map[string]string
 // @Router /game/{id}/select-piece [post]
-func (gh *GameHandler) SelectPiece(c echo.Context) error {
+func selectPiece(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -66,7 +60,12 @@ func (gh *GameHandler) SelectPiece(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Données invalides")
 	}
 
-	updatedGame, err := game.SelectPiece(gameID, userToken.User.ID, req.PieceID)
+	g, err := game.GetGame(gameID, userToken.User.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	err = g.SelectPiece(req.PieceID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -78,12 +77,12 @@ func (gh *GameHandler) SelectPiece(c echo.Context) error {
 			Type:   "piece_selected",
 			GameID: gameID,
 			UserID: strconv.FormatInt(userToken.User.ID, 10),
-			Data:   updatedGame.ToWeb(),
+			Data:   g.ToWeb(),
 		}
 		hub.BroadcastToGame(gameID, message)
 	}
 
-	return c.JSON(http.StatusOK, updatedGame.ToWeb())
+	return c.JSON(http.StatusOK, g.ToWeb())
 }
 
 // PlacePiece place une pièce sur le plateau
@@ -98,7 +97,7 @@ func (gh *GameHandler) SelectPiece(c echo.Context) error {
 // @Success 200 {object} game.Game
 // @Failure 400 {object} map[string]string
 // @Router /game/{id}/place-piece [post]
-func (gh *GameHandler) PlacePiece(c echo.Context) error {
+func placePiece(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -110,7 +109,17 @@ func (gh *GameHandler) PlacePiece(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Données invalides")
 	}
 
-	updatedGame, err := game.PlacePiece(gameID, userToken.User.ID, req.Position)
+	g, err := game.GetGame(gameID, userToken.User.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	row, col, err := game.PositionToCoords(req.Position)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	err = g.PlacePiece(game.Position{Row: row, Col: col})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -119,7 +128,7 @@ func (gh *GameHandler) PlacePiece(c echo.Context) error {
 	hub := websocketHandler.GetGameHub(gameID)
 	if hub != nil {
 		messageType := "piece_placed"
-		if updatedGame.Status == "finished" {
+		if g.Status == game.StatusFinished {
 			messageType = "game_finished"
 		}
 
@@ -127,12 +136,12 @@ func (gh *GameHandler) PlacePiece(c echo.Context) error {
 			Type:   messageType,
 			GameID: gameID,
 			UserID: strconv.FormatInt(userToken.User.ID, 10),
-			Data:   updatedGame.ToWeb(),
+			Data:   g.ToWeb(),
 		}
 		hub.BroadcastToGame(gameID, message)
 	}
 
-	return c.JSON(http.StatusOK, updatedGame.ToWeb())
+	return c.JSON(http.StatusOK, g.ToWeb())
 }
 
 // ForfeitGame abandonne une partie
@@ -144,14 +153,19 @@ func (gh *GameHandler) PlacePiece(c echo.Context) error {
 // @Success 200 {object} game.Game
 // @Failure 400 {object} map[string]string
 // @Router /game/{id}/forfeit [post]
-func (gh *GameHandler) ForfeitGame(c echo.Context) error {
+func forfeitGame(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
 	gameID := c.Param("id")
-	updatedGame, err := game.ForfeitGame(gameID, userToken.User.ID)
+	g, err := game.GetGame(gameID, userToken.User.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	err = g.ForfeitGame(userToken.User.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -163,12 +177,12 @@ func (gh *GameHandler) ForfeitGame(c echo.Context) error {
 			Type:   "game_forfeited",
 			GameID: gameID,
 			UserID: strconv.FormatInt(userToken.User.ID, 10),
-			Data:   updatedGame.ToWeb(),
+			Data:   g.ToWeb(),
 		}
 		hub.BroadcastToGame(gameID, message)
 	}
 
-	return c.JSON(http.StatusOK, updatedGame.ToWeb())
+	return c.JSON(http.StatusOK, g.ToWeb())
 }
 
 // GetMyGames récupère toutes les parties de l'utilisateur
@@ -181,7 +195,7 @@ func (gh *GameHandler) ForfeitGame(c echo.Context) error {
 // @Success 200 {object} []game.Game
 // @Failure 401 {object} map[string]string
 // @Router /game/my [get]
-func (gh *GameHandler) GetMyGames(c echo.Context) error {
+func getMyGames(c echo.Context) error {
 	userToken, err := user.GetTokenFromRequest(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())

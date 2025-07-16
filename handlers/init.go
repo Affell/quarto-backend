@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"quarto/handlers/aiHandler"
 	"quarto/handlers/authHandler"
 	"quarto/handlers/challengeHandler"
 	"quarto/handlers/gameHandler"
@@ -22,6 +23,7 @@ func All() (routes []models.Route) {
 	routes = append(routes, gameHandler.All("/game")...)
 	routes = append(routes, challengeHandler.All("/challenge")...)
 	routes = append(routes, userHandler.All("/users")...)
+	routes = append(routes, aiHandler.All("/ai")...)
 	routes = append(routes, websocketHandler.All()...)
 
 	return
