@@ -130,19 +130,19 @@ func TestEngineSearch(t *testing.T) {
 	// Test case 1
 	state1 := GameState{
 		Board: [4][4]game.Piece{
-			{game.PieceEmpty, game.PieceEmpty, game.PieceEmpty, game.PieceEmpty},
-			{game.PieceEmpty, game.PieceEmpty, game.PieceEmpty, game.PieceEmpty},
-			{game.PieceEmpty, game.PieceEmpty, game.PieceEmpty, game.PieceEmpty},
-			{game.PieceEmpty, game.PieceEmpty, game.PieceEmpty, game.PieceEmpty},
+			{0, 2, 12, 9},
+			{10, 1, 14, game.PieceEmpty},
+			{5, 6, 3, game.PieceEmpty},
+			{4, 8, 11, 13},
 		},
-		AvailablePieces: []game.Piece{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-		SelectedPiece:   0,
+		AvailablePieces: []game.Piece{7},
+		SelectedPiece:   15,
 	}
 
 	newState := state1.ApplyMove(AIMove{
 		Move: game.Move{
-			Piece:    3,
-			Position: game.Position{Row: 0, Col: 0},
+			Piece:    15,
+			Position: game.Position{Row: 1, Col: 3},
 		},
 	})
 

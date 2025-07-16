@@ -49,6 +49,7 @@ func (e *Engine) SearchWithStats(state GameState, perfStats *stats.PerformanceSt
 	e.TT.Clear()
 
 	isMaximizing := len(state.AvailablePieces)%2 == 0 // Maximiser si c'est le tour du joueur 1
+	fmt.Printf("Starting search: Maximizing=%v, AvailablePieces=%d, SelectedPiece=%d\n", isMaximizing, len(state.AvailablePieces), state.SelectedPiece)
 
 	// Recherche avec élagage alpha-beta et table de transposition
 	score, bestMoves := e.minimax(state, e.MaxDepth, LOSS_SCORE-1, WIN_SCORE+1, isMaximizing, perfStats)
@@ -88,6 +89,7 @@ func (e *Engine) minimax(node GameState, depth int, alpha, beta int, isMaximizin
 	if node.IsGameOver || depth == 0 {
 		evalStart := time.Now()
 		score := e.evaluatePosition(node)
+
 		if perfStats != nil {
 			evalDuration := time.Since(evalStart)
 			if depth == 0 {
@@ -122,9 +124,6 @@ func (e *Engine) minimax(node GameState, depth int, alpha, beta int, isMaximizin
 	} else {
 		bestScore = math.MaxInt32
 	}
-	if depth == 6 {
-		fmt.Printf("Depth %d: %v\n", depth, isMaximizing)
-	}
 	for _, move := range validMoves {
 		moveStart := time.Now()
 		newState := node.ApplyMove(move)
@@ -140,18 +139,18 @@ func (e *Engine) minimax(node GameState, depth int, alpha, beta int, isMaximizin
 
 		// Prioriser les chemins plus courts vers la victoire à score égal
 		isSameScoreButShorterPath := false
-		// if score == bestScore && score != 0 { // Score non nul (victoire ou défaite)
-		// 	currentPathLength := len(moves) + 1 // +1 pour le coup actuel
-		// 	bestPathLength := len(bestMoves)
+		if score == bestScore && score != 0 { // Score non nul (victoire ou défaite)
+			currentPathLength := len(moves) + 1 // +1 pour le coup actuel
+			bestPathLength := len(bestMoves)
 
-		// 	// Si c'est une victoire immédiate (continuation vide), c'est toujours prioritaire
-		// 	if len(moves) == 0 && newState.IsGameOver && newState.Winner != 0 {
-		// 		isSameScoreButShorterPath = true
-		// 	} else if currentPathLength < bestPathLength && bestPathLength > 1 {
-		// 		// Chemin plus court vers la même conclusion
-		// 		isSameScoreButShorterPath = true
-		// 	}
-		// }
+			// Si c'est une victoire immédiate (continuation vide), c'est toujours prioritaire
+			if len(moves) == 0 && newState.IsGameOver && newState.Winner != 0 {
+				isSameScoreButShorterPath = true
+			} else if currentPathLength < bestPathLength && bestPathLength > 1 {
+				// Chemin plus court vers la même conclusion
+				isSameScoreButShorterPath = true
+			}
+		}
 
 		if isBetter || isSameScoreButShorterPath {
 			bestScore = score
@@ -230,10 +229,7 @@ func (e *Engine) evaluatePosition(state GameState) int {
 		}
 	}
 
-	// Pour les positions non terminales, évaluation simple basée sur les opportunités
-	score := 0
-
-	return score
+	return 0
 }
 
 // Fonctions utilitaires pour min/max

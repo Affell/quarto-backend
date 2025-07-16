@@ -67,9 +67,17 @@ func (state GameState) CheckGameOver() (bool, bool) {
 	return win || len(state.AvailablePieces) == 0, win
 }
 
-// GetValidMoves retourne tous les mouvements valides pour l'état actuel (version classique)
+// GetValidMoves retourne tous les mouvements valides pour l'état actuel
 func GetValidMoves(state GameState) []AIMove {
 	basicMoves := game.GetValidMoves(game.GamePhasePlacePiece, state.Board, []game.Piece{state.SelectedPiece})
+	if len(state.AvailablePieces) == 0 && len(basicMoves) == 1 {
+		return []AIMove{
+			{
+				Move:          basicMoves[0],
+				SelectedPiece: game.PieceEmpty,
+			},
+		}
+	}
 
 	var moves []AIMove
 	// Add piece selection moves
